@@ -3,9 +3,9 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app import db
-from models import Listing, Photo, CustomField, User
+from models import Listing, Photo, CustomField, User, Notification
 from forms import ListingForm, CustomFieldForm
-from external_platforms import post_to_external_platforms
+from external_platforms import post_to_external_platforms, check_external_platforms_comments
 
 main = Blueprint('main', __name__)
 
@@ -67,6 +67,7 @@ def create_listing():
 @main.route('/listing/<int:listing_id>')
 def view_listing(listing_id):
     listing = Listing.query.get_or_404(listing_id)
+    check_external_platforms_comments(listing)
     return render_template('view_listing.html', listing=listing)
 
 @main.route('/listing/<int:listing_id>/edit', methods=['GET', 'POST'])
@@ -140,4 +141,24 @@ def profile():
         return redirect(url_for('main.profile'))
 
     listings = current_user.listings.order_by(Listing.id.desc()).all()
-    return render_template('profile.html', user=current_user, listings=listings)
+    notifications = current_user.notifications.order_by(Notification.timestamp.desc()).limit(10).all()
+    return render_template('profile.html', user=current_user, listings=listings, notifications=notifications)
+
+@main.route('/notifications')
+@login_required
+def notifications():
+    notifications = current_user.notifications.order_by(Notification.timestamp.desc()).all()
+    return render_template('notifications.html', notifications=notifications)
+
+@main.route('/notification/<int:notification_id>/mark_read')
+@login_required
+def mark_notification_read(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+    if notification.user_id != current_user.id:
+        flash('You can only mark your own notifications as read.')
+        return redirect(url_for('main.notifications'))
+
+    notification.is_read = True
+    db.session.commit()
+    flash('Notification marked as read.')
+    return redirect(url_for('main.notifications'))

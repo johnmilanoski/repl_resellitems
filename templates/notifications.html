@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4">
+    <h1 class="text-3xl font-bold mb-6">Notifications</h1>
+
+    {% if notifications %}
+        <ul class="bg-white shadow-md rounded px-8 pt-6 pb-8">
+            {% for notification in notifications %}
+                <li class="mb-4 {% if not notification.is_read %}font-bold{% endif %}">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p>{{ notification.content }}</p>
+                            <p class="text-sm text-gray-500">{{ notification.platform }} - {{ notification.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                        {% if not notification.is_read %}
+                            <a href="{{ url_for('main.mark_notification_read', notification_id=notification.id) }}" class="text-blue-500 hover:text-blue-700">Mark as read</a>
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-center text-gray-600">No notifications available.</p>
+    {% endif %}
+</div>
+{% endblock %}
