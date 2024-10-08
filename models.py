@@ -8,6 +8,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256))
     google_id = db.Column(db.String(120), unique=True, nullable=True)
+    enable_cross_platform_posting = db.Column(db.Boolean, default=True)
     listings = db.relationship('Listing', backref='owner', lazy='dynamic')
 
     def set_password(self, password):

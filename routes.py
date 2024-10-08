@@ -3,8 +3,9 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app import db
-from models import Listing, Photo, CustomField
+from models import Listing, Photo, CustomField, User
 from forms import ListingForm, CustomFieldForm
+from external_platforms import post_to_external_platforms
 
 main = Blueprint('main', __name__)
 
@@ -47,6 +48,17 @@ def create_listing():
                 db.session.add(custom_field)
 
         db.session.commit()
+
+        if current_user.enable_cross_platform_posting:
+            external_results = post_to_external_platforms(listing)
+            for result in external_results:
+                if result['success']:
+                    flash(f"Successfully posted to {result['platform']}!")
+                else:
+                    flash(f"Failed to post to {result['platform']}: {result['error']}", 'error')
+        else:
+            flash('Cross-platform posting is disabled. Your listing was only created on this platform.')
+
         flash('Your listing has been created!')
         return redirect(url_for('main.view_listing', listing_id=listing.id))
 
@@ -89,6 +101,17 @@ def edit_listing(listing_id):
                 db.session.add(custom_field)
 
         db.session.commit()
+
+        if current_user.enable_cross_platform_posting:
+            external_results = post_to_external_platforms(listing)
+            for result in external_results:
+                if result['success']:
+                    flash(f"Successfully updated listing on {result['platform']}!")
+                else:
+                    flash(f"Failed to update listing on {result['platform']}: {result['error']}", 'error')
+        else:
+            flash('Cross-platform posting is disabled. Your listing was only updated on this platform.')
+
         flash('Your listing has been updated!')
         return redirect(url_for('main.view_listing', listing_id=listing.id))
 
@@ -107,8 +130,14 @@ def mark_sold(listing_id):
     flash('Your listing has been marked as sold!')
     return redirect(url_for('main.view_listing', listing_id=listing_id))
 
-@main.route('/profile')
+@main.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
+    if request.method == 'POST':
+        current_user.enable_cross_platform_posting = 'enable_cross_platform' in request.form
+        db.session.commit()
+        flash('Your settings have been updated.')
+        return redirect(url_for('main.profile'))
+
     listings = current_user.listings.order_by(Listing.id.desc()).all()
     return render_template('profile.html', user=current_user, listings=listings)
