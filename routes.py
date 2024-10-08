@@ -1,0 +1,114 @@
+import os
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask_login import login_required, current_user
+from werkzeug.utils import secure_filename
+from app import db
+from models import Listing, Photo, CustomField
+from forms import ListingForm, CustomFieldForm
+
+main = Blueprint('main', __name__)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
+
+@main.route('/')
+def index():
+    listings = Listing.query.filter_by(status='active').order_by(Listing.id.desc()).limit(10).all()
+    return render_template('index.html', listings=listings)
+
+@main.route('/create_listing', methods=['GET', 'POST'])
+@login_required
+def create_listing():
+    form = ListingForm()
+    custom_field_form = CustomFieldForm()
+
+    if form.validate_on_submit():
+        listing = Listing(
+            title=form.title.data,
+            description=form.description.data,
+            price=form.price.data,
+            location=form.location.data,
+            negotiable=form.negotiable.data,
+            user_id=current_user.id
+        )
+        db.session.add(listing)
+        db.session.flush()
+
+        for photo in request.files.getlist('photos'):
+            if photo and allowed_file(photo.filename):
+                filename = secure_filename(photo.filename)
+                photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                photo_db = Photo(filename=filename, listing_id=listing.id)
+                db.session.add(photo_db)
+
+        for field in custom_field_form.custom_fields.data:
+            if field['name'] and field['value']:
+                custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
+                db.session.add(custom_field)
+
+        db.session.commit()
+        flash('Your listing has been created!')
+        return redirect(url_for('main.view_listing', listing_id=listing.id))
+
+    return render_template('create_listing.html', form=form, custom_field_form=custom_field_form)
+
+@main.route('/listing/<int:listing_id>')
+def view_listing(listing_id):
+    listing = Listing.query.get_or_404(listing_id)
+    return render_template('view_listing.html', listing=listing)
+
+@main.route('/listing/<int:listing_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_listing(listing_id):
+    listing = Listing.query.get_or_404(listing_id)
+    if listing.user_id != current_user.id:
+        flash('You can only edit your own listings.')
+        return redirect(url_for('main.view_listing', listing_id=listing_id))
+
+    form = ListingForm(obj=listing)
+    custom_field_form = CustomFieldForm()
+
+    if form.validate_on_submit():
+        listing.title = form.title.data
+        listing.description = form.description.data
+        listing.price = form.price.data
+        listing.location = form.location.data
+        listing.negotiable = form.negotiable.data
+
+        for photo in request.files.getlist('photos'):
+            if photo and allowed_file(photo.filename):
+                filename = secure_filename(photo.filename)
+                photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                photo_db = Photo(filename=filename, listing_id=listing.id)
+                db.session.add(photo_db)
+
+        listing.custom_fields = []
+        for field in custom_field_form.custom_fields.data:
+            if field['name'] and field['value']:
+                custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
+                db.session.add(custom_field)
+
+        db.session.commit()
+        flash('Your listing has been updated!')
+        return redirect(url_for('main.view_listing', listing_id=listing.id))
+
+    return render_template('edit_listing.html', form=form, custom_field_form=custom_field_form, listing=listing)
+
+@main.route('/listing/<int:listing_id>/mark_sold')
+@login_required
+def mark_sold(listing_id):
+    listing = Listing.query.get_or_404(listing_id)
+    if listing.user_id != current_user.id:
+        flash('You can only mark your own listings as sold.')
+        return redirect(url_for('main.view_listing', listing_id=listing_id))
+
+    listing.status = 'sold'
+    db.session.commit()
+    flash('Your listing has been marked as sold!')
+    return redirect(url_for('main.view_listing', listing_id=listing_id))
+
+@main.route('/profile')
+@login_required
+def profile():
+    listings = current_user.listings.order_by(Listing.id.desc()).all()
+    return render_template('profile.html', user=current_user, listings=listings)

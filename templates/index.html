@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Resell Platform{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">Latest Listings</h1>
+
+<div class="listing-grid">
+    {% for listing in listings %}
+    <div class="listing-card">
+        <a href="{{ url_for('main.view_listing', listing_id=listing.id) }}">
+            {% if listing.photos.first() %}
+            <img src="{{ url_for('static', filename='uploads/' + listing.photos.first().filename) }}" alt="{{ listing.title }}" class="w-full h-48 object-cover">
+            {% else %}
+            <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                <span class="text-gray-500">No image</span>
+            </div>
+            {% endif %}
+            <div class="p-4">
+                <h2 class="text-xl font-semibold mb-2">{{ listing.title }}</h2>
+                <p class="text-gray-600 mb-2">${{ "%.2f"|format(listing.price) }}</p>
+                <p class="text-gray-500">{{ listing.location }}</p>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not listings %}
+<p class="text-center text-gray-600 mt-8">No listings available at the moment.</p>
+{% endif %}
+{% endblock %}
