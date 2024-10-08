@@ -1,11 +1,11 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
+from functools import wraps
 from app import db
 from models import User, Listing
 from forms import AdminUserForm, AdminListingForm
-from functools import wraps
 
-admin = Blueprint('admin', __name__, url_prefix='/admin')
+admin = Blueprint('admin', __name__)
 
 def admin_required(f):
     @wraps(f)
@@ -20,9 +20,14 @@ def admin_required(f):
 @admin.route('/')
 @admin_required
 def admin_panel():
+    current_app.logger.info(f"Admin panel accessed by user {current_user.id}")
     users = User.query.all()
     listings = Listing.query.all()
     return render_template('admin/panel.html', users=users, listings=listings)
+
+@admin.route('/test')
+def admin_test():
+    return "Admin blueprint is accessible"
 
 @admin.route('/user/<int:user_id>', methods=['GET', 'POST'])
 @admin_required
@@ -35,6 +40,7 @@ def admin_edit_user(user_id):
         user.is_admin = form.is_admin.data
         user.enable_cross_platform_posting = form.enable_cross_platform_posting.data
         db.session.commit()
+        current_app.logger.info(f"User {user_id} updated by admin {current_user.id}")
         flash('User updated successfully.', 'success')
         return redirect(url_for('admin.admin_panel'))
     return render_template('admin/edit_user.html', form=form, user=user)
@@ -52,6 +58,7 @@ def admin_edit_listing(listing_id):
         listing.negotiable = form.negotiable.data
         listing.status = form.status.data
         db.session.commit()
+        current_app.logger.info(f"Listing {listing_id} updated by admin {current_user.id}")
         flash('Listing updated successfully.', 'success')
         return redirect(url_for('admin.admin_panel'))
     return render_template('admin/edit_listing.html', form=form, listing=listing)
@@ -65,6 +72,7 @@ def admin_delete_user(user_id):
     else:
         db.session.delete(user)
         db.session.commit()
+        current_app.logger.info(f"User {user_id} deleted by admin {current_user.id}")
         flash('User deleted successfully.', 'success')
     return redirect(url_for('admin.admin_panel'))
 
@@ -74,5 +82,6 @@ def admin_delete_listing(listing_id):
     listing = Listing.query.get_or_404(listing_id)
     db.session.delete(listing)
     db.session.commit()
+    current_app.logger.info(f"Listing {listing_id} deleted by admin {current_user.id}")
     flash('Listing deleted successfully.', 'success')
     return redirect(url_for('admin.admin_panel'))
