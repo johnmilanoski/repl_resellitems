@@ -20,7 +20,6 @@ def admin_required(f):
 @admin.route('/')
 @admin_required
 def admin_panel():
-    print("Accessing admin panel")  # Debug print
     current_app.logger.info(f"Admin panel accessed by user {current_user.id}")
     users = User.query.all()
     listings = Listing.query.all()
