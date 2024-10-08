@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Listing - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4">
+    <h1 class="text-3xl font-bold mb-6">Edit Listing</h1>
+    <form method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        {{ form.hidden_tag() }}
+        <div class="mb-4">
+            {{ form.title.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.title(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
+        </div>
+        <div class="mb-4">
+            {{ form.description.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.description(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline", rows="4") }}
+        </div>
+        <div class="mb-4">
+            {{ form.price.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.price(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
+        </div>
+        <div class="mb-4">
+            {{ form.location.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.location(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
+        </div>
+        <div class="mb-4">
+            <label class="flex items-center">
+                {{ form.negotiable(class="mr-2") }}
+                {{ form.negotiable.label }}
+            </label>
+        </div>
+        <div class="mb-6">
+            {{ form.status.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.status(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
+        </div>
+        <div class="flex items-center justify-between">
+            {{ form.submit(class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline") }}
+            <a href="{{ url_for('admin.admin_panel') }}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, FloatField, BooleanField, PasswordField, SubmitField, FieldList, FormField
+from wtforms import StringField, TextAreaField, FloatField, BooleanField, PasswordField, SubmitField, FieldList, FormField, SelectField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from models import User
 
@@ -46,3 +46,19 @@ class ListingForm(FlaskForm):
     negotiable = BooleanField('Price Negotiable')
     custom_fields = FieldList(FormField(CustomFieldForm), min_entries=1)
     submit = SubmitField('Create Listing')
+
+class AdminUserForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    is_admin = BooleanField('Admin')
+    enable_cross_platform_posting = BooleanField('Enable Cross-Platform Posting')
+    submit = SubmitField('Update User')
+
+class AdminListingForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    price = FloatField('Price', validators=[DataRequired()])
+    location = StringField('Location', validators=[DataRequired()])
+    negotiable = BooleanField('Price Negotiable')
+    status = SelectField('Status', choices=[('active', 'Active'), ('sold', 'Sold'), ('deleted', 'Deleted')])
+    submit = SubmitField('Update Listing')

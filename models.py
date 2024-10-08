@@ -10,6 +10,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256))
     google_id = db.Column(db.String(120), unique=True, nullable=True)
     enable_cross_platform_posting = db.Column(db.Boolean, default=True)
+    is_admin = db.Column(db.Boolean, default=False)
     listings = db.relationship('Listing', backref='owner', lazy='dynamic')
     notifications = db.relationship('Notification', backref='user', lazy='dynamic')
 
