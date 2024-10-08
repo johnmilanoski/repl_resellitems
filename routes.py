@@ -13,6 +13,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
 
 @main.route('/')
+@main.route('/home')
 def index():
     listings = Listing.query.filter_by(status='active').order_by(Listing.id.desc()).limit(10).all()
     return render_template('index.html', listings=listings)
