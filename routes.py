@@ -87,49 +87,54 @@ def view_listing(listing_id):
 @main.route('/listing/<int:listing_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_listing(listing_id):
-    listing = Listing.query.get_or_404(listing_id)
-    if listing.user_id != current_user.id:
-        flash('You can only edit your own listings.')
+    try:
+        listing = Listing.query.get_or_404(listing_id)
+        if listing.user_id != current_user.id:
+            flash('You can only edit your own listings.', 'error')
+            return redirect(url_for('main.view_listing', listing_id=listing_id))
+
+        form = ListingForm(obj=listing)
+
+        if form.validate_on_submit():
+            listing.title = form.title.data
+            listing.description = form.description.data
+            listing.price = form.price.data
+            listing.location = form.location.data
+            listing.negotiable = form.negotiable.data
+
+            for photo in request.files.getlist('photos'):
+                if photo and allowed_file(photo.filename):
+                    filename = secure_filename(photo.filename)
+                    photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                    photo_db = Photo(filename=filename, listing_id=listing.id)
+                    db.session.add(photo_db)
+
+            listing.custom_fields = []
+            for field in form.custom_fields.data:
+                if field['name'] and field['value']:
+                    custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
+                    db.session.add(custom_field)
+
+            db.session.commit()
+
+            if current_user.enable_cross_platform_posting:
+                external_results = post_to_external_platforms(listing)
+                for result in external_results:
+                    if result['success']:
+                        flash(f"Successfully updated listing on {result['platform']}!", 'success')
+                    else:
+                        flash(f"Failed to update listing on {result['platform']}: {result['error']}", 'error')
+            else:
+                flash('Cross-platform posting is disabled. Your listing was only updated on this platform.', 'info')
+
+            flash('Your listing has been updated!', 'success')
+            return redirect(url_for('main.view_listing', listing_id=listing.id))
+
+        return render_template('edit_listing.html', form=form, listing=listing)
+    except Exception as e:
+        current_app.logger.error(f"Error editing listing {listing_id}: {str(e)}")
+        flash('An error occurred while editing your listing. Please try again.', 'error')
         return redirect(url_for('main.view_listing', listing_id=listing_id))
-
-    form = ListingForm(obj=listing)
-
-    if form.validate_on_submit():
-        listing.title = form.title.data
-        listing.description = form.description.data
-        listing.price = form.price.data
-        listing.location = form.location.data
-        listing.negotiable = form.negotiable.data
-
-        for photo in request.files.getlist('photos'):
-            if photo and allowed_file(photo.filename):
-                filename = secure_filename(photo.filename)
-                photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-                photo_db = Photo(filename=filename, listing_id=listing.id)
-                db.session.add(photo_db)
-
-        listing.custom_fields = []
-        for field in form.custom_fields.data:
-            if field['name'] and field['value']:
-                custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
-                db.session.add(custom_field)
-
-        db.session.commit()
-
-        if current_user.enable_cross_platform_posting:
-            external_results = post_to_external_platforms(listing)
-            for result in external_results:
-                if result['success']:
-                    flash(f"Successfully updated listing on {result['platform']}!")
-                else:
-                    flash(f"Failed to update listing on {result['platform']}: {result['error']}", 'error')
-        else:
-            flash('Cross-platform posting is disabled. Your listing was only updated on this platform.')
-
-        flash('Your listing has been updated!')
-        return redirect(url_for('main.view_listing', listing_id=listing.id))
-
-    return render_template('edit_listing.html', form=form, listing=listing)
 
 @main.route('/listing/<int:listing_id>/mark_sold')
 @login_required
