@@ -13,10 +13,12 @@ def admin_required(f):
     @wraps(f)
     @login_required
     def decorated_function(*args, **kwargs):
+        current_app.logger.debug(f"Admin check for user {current_user.id}")
         if not current_user.is_admin:
             current_app.logger.warning(f"Non-admin user {current_user.id} attempted to access admin panel")
             flash('You do not have permission to access this page.', 'error')
             return redirect(url_for('main.index'))
+        current_app.logger.debug(f"Admin access granted for user {current_user.id}")
         return f(*args, **kwargs)
     return decorated_function
 

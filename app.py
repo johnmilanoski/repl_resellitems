@@ -5,6 +5,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
 import os
+import logging
 
 class Base(DeclarativeBase):
     pass
@@ -16,6 +17,10 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
     app.config.from_object('config.Config')
+
+    # Set up logging
+    logging.basicConfig(level=logging.DEBUG)
+    app.logger.setLevel(logging.DEBUG)
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -38,6 +43,7 @@ def create_app():
 
     from admin import admin as admin_blueprint
     app.register_blueprint(admin_blueprint)
+    app.logger.debug("Admin blueprint registered")
 
     @app.errorhandler(403)
     def forbidden_error(error):
