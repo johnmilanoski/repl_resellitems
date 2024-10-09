@@ -5,10 +5,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (addCustomFieldButton && customFieldsContainer) {
         addCustomFieldButton.addEventListener('click', function() {
             const newField = document.createElement('div');
-            newField.classList.add('custom-field', 'mb-4');
+            newField.classList.add('mb-4');
             newField.innerHTML = `
-                <input type="text" name="custom_fields-${customFieldsContainer.children.length}-name" placeholder="Field Name" class="w-full px-3 py-2 border rounded-md">
-                <input type="text" name="custom_fields-${customFieldsContainer.children.length}-value" placeholder="Field Value" class="w-full px-3 py-2 border rounded-md mt-2">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Field Name</label>
+                <input type="text" name="custom_fields-${customFieldsContainer.children.length}-name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <label class="block text-gray-700 text-sm font-bold mb-2 mt-2">Field Value</label>
+                <input type="text" name="custom_fields-${customFieldsContainer.children.length}-value" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             `;
             customFieldsContainer.appendChild(newField);
         });
