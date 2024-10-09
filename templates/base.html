@@ -20,7 +20,11 @@
                 <div class="hidden md:flex items-center space-x-4">
                     <a href="{{ url_for('main.index') }}" class="text-gray-800 hover:text-gray-700">Home</a>
                     {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('main.my_listings') }}" class="text-gray-800 hover:text-gray-700">My Listings</a>
+                        {% if current_user.listings.count() > 0 %}
+                            <a href="{{ url_for('main.my_listings') }}" class="text-gray-800 hover:text-gray-700">My Listings</a>
+                        {% else %}
+                            <a href="{{ url_for('main.create_listing') }}" class="text-gray-800 hover:text-gray-700">Create Listing</a>
+                        {% endif %}
                         <a href="{{ url_for('main.profile') }}" class="text-gray-800 hover:text-gray-700">Profile</a>
                         {% if current_user.is_admin %}
                             <a href="{{ url_for('admin.admin_panel') }}" class="text-gray-800 hover:text-gray-700">Admin Panel</a>
@@ -42,7 +46,11 @@
             <div id="mobile-menu" class="md:hidden hidden mt-3">
                 <a href="{{ url_for('main.index') }}" class="block py-2 text-gray-800 hover:text-gray-700">Home</a>
                 {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('main.my_listings') }}" class="block py-2 text-gray-800 hover:text-gray-700">My Listings</a>
+                    {% if current_user.listings.count() > 0 %}
+                        <a href="{{ url_for('main.my_listings') }}" class="block py-2 text-gray-800 hover:text-gray-700">My Listings</a>
+                    {% else %}
+                        <a href="{{ url_for('main.create_listing') }}" class="block py-2 text-gray-800 hover:text-gray-700">Create Listing</a>
+                    {% endif %}
                     <a href="{{ url_for('main.profile') }}" class="block py-2 text-gray-800 hover:text-gray-700">Profile</a>
                     {% if current_user.is_admin %}
                         <a href="{{ url_for('admin.admin_panel') }}" class="block py-2 text-gray-800 hover:text-gray-700">Admin Panel</a>

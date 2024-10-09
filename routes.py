@@ -10,7 +10,7 @@ from external_platforms import post_to_external_platforms, check_external_platfo
 main = Blueprint('main', __name__)
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
 
 @main.route('/')
 @main.route('/home')
