@@ -34,11 +34,15 @@ def admin_panel():
 
     if search_form.validate_on_submit():
         search_query = search_form.search.data
+        current_app.logger.debug(f"Search query: {search_query}")
         users = User.query.filter(or_(User.username.ilike(f'%{search_query}%'), User.email.ilike(f'%{search_query}%'))).paginate(page=page, per_page=per_page)
         listings = Listing.query.filter(or_(Listing.title.ilike(f'%{search_query}%'), Listing.description.ilike(f'%{search_query}%'))).paginate(page=page, per_page=per_page)
     else:
         users = User.query.paginate(page=page, per_page=per_page)
         listings = Listing.query.paginate(page=page, per_page=per_page)
+    
+    current_app.logger.debug(f"Number of users: {users.total}")
+    current_app.logger.debug(f"Number of listings: {listings.total}")
     
     end_time = time.time()
     current_app.logger.info(f"Total admin panel load time: {end_time - start_time:.4f} seconds")
