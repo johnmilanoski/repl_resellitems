@@ -75,6 +75,7 @@ def create_listing():
             db.session.rollback()
             current_app.logger.error(f"Error creating listing: {str(e)}")
             flash('An error occurred while creating your listing. Please try again.', 'error')
+            return render_template('create_listing.html', form=form)
 
     return render_template('create_listing.html', form=form)
 
@@ -102,7 +103,6 @@ def edit_listing(listing_id):
             listing.location = form.location.data
             listing.negotiable = form.negotiable.data
 
-            # Handle photo uploads
             for photo in request.files.getlist('photos'):
                 if photo and allowed_file(photo.filename):
                     filename = secure_filename(photo.filename)
@@ -114,7 +114,6 @@ def edit_listing(listing_id):
                 else:
                     current_app.logger.warning(f"Invalid file: {photo.filename}")
 
-            # Handle custom fields
             listing.custom_fields = []
             for field in form.custom_fields.data:
                 if field['name'] and field['value']:
