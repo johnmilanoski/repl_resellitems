@@ -114,4 +114,5 @@ def admin_stats():
     active_listings = Listing.query.filter_by(status='active').count()
     sold_listings = Listing.query.filter_by(status='sold').count()
 
+    current_app.logger.info(f"Admin stats viewed by admin {current_user.id}")
     return render_template('admin/stats.html', total_users=total_users, total_listings=total_listings, active_listings=active_listings, sold_listings=sold_listings)
