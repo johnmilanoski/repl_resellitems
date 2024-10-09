@@ -22,6 +22,7 @@ def index():
 @login_required
 def create_listing():
     form = ListingForm()
+    custom_field_form = CustomFieldForm()
 
     if form.validate_on_submit():
         try:
@@ -67,7 +68,7 @@ def create_listing():
             current_app.logger.error(f"Error creating listing: {str(e)}")
             flash('An error occurred while creating your listing. Please try again.', 'error')
 
-    return render_template('create_listing.html', form=form)
+    return render_template('create_listing.html', form=form, custom_field_form=custom_field_form)
 
 @main.route('/listing/<int:listing_id>')
 def view_listing(listing_id):
