@@ -6,6 +6,7 @@
 <div class="container mx-auto px-4">
     <h1 class="text-3xl font-bold mb-6">Create New Listing</h1>
     <form method="POST" enctype="multipart/form-data">
+        {{ form.csrf_token }}
         {{ form.hidden_tag() }}
         <div class="mb-4">
             {{ form.title.label(class="block text-gray-700 text-sm font-bold mb-2") }}

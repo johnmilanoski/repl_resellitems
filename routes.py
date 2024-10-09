@@ -79,6 +79,7 @@ def create_listing():
         current_app.logger.debug("Form validation failed")
         for field, errors in form.errors.items():
             for error in errors:
+                current_app.logger.error(f"Error in {field}: {error}")
                 flash(f"Error in {field}: {error}", 'error')
 
     return render_template('create_listing.html', form=form, custom_field_form=custom_field_form)
