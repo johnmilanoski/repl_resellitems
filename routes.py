@@ -18,6 +18,12 @@ def index():
     listings = Listing.query.filter_by(status='active').order_by(Listing.id.desc()).limit(10).all()
     return render_template('index.html', listings=listings)
 
+@main.route('/my_listings')
+@login_required
+def my_listings():
+    listings = current_user.listings.order_by(Listing.id.desc()).all()
+    return render_template('my_listings.html', listings=listings)
+
 @main.route('/create_listing', methods=['GET', 'POST'])
 @login_required
 def create_listing():
