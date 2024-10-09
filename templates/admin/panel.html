@@ -86,6 +86,11 @@
                     </td>
                 </tr>
                 {% endfor %}
+                {% if not listings.items %}
+                <tr>
+                    <td colspan='4' class='text-center py-4'>No listings available at the moment.</td>
+                </tr>
+                {% endif %}
             </tbody>
         </table>
         {% if listings.pages > 1 %}
