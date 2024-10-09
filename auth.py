@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 from app import db, login_manager
 from models import User
 from forms import LoginForm, RegistrationForm
@@ -17,6 +17,11 @@ client = WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID"))
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
+
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     current_app.logger.debug("Login route accessed")
@@ -27,18 +32,14 @@ def login():
     if form.validate_on_submit():
         current_app.logger.debug(f"Login form submitted for email: {form.email.data}")
         user = User.query.filter_by(email=form.email.data).first()
-        if user is None:
-            current_app.logger.warning(f"Login attempt failed: User not found for email {form.email.data}")
-            flash('Invalid email or password')
-            return redirect(url_for('auth.login'))
-        if not user.check_password(form.password.data):
-            current_app.logger.warning(f"Login attempt failed: Incorrect password for user {user.id}")
+        if user is None or not user.check_password(form.password.data):
+            current_app.logger.warning(f"Login attempt failed: Invalid email or password for {form.email.data}")
             flash('Invalid email or password')
             return redirect(url_for('auth.login'))
         login_user(user, remember=form.remember_me.data)
         current_app.logger.info(f"User {user.id} logged in successfully")
         next_page = request.args.get('next')
-        if not next_page or urlparse(next_page).netloc != '':
+        if not next_page or not is_safe_url(next_page):
             next_page = url_for('main.index')
         return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
