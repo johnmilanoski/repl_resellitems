@@ -1,10 +1,10 @@
-import os
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
+import os
 
 class Base(DeclarativeBase):
     pass
@@ -38,5 +38,10 @@ def create_app():
 
     from admin import admin as admin_blueprint
     app.register_blueprint(admin_blueprint)
+
+    @app.errorhandler(403)
+    def forbidden_error(error):
+        app.logger.error(f"403 Forbidden: {error}")
+        return render_template('errors/403.html'), 403
 
     return app

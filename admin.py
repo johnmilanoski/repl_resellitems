@@ -12,6 +12,7 @@ def admin_required(f):
     @login_required
     def decorated_function(*args, **kwargs):
         if not current_user.is_admin:
+            current_app.logger.warning(f"Non-admin user {current_user.id} attempted to access admin panel")
             flash('You do not have permission to access this page.', 'error')
             return redirect(url_for('main.index'))
         return f(*args, **kwargs)
@@ -24,10 +25,6 @@ def admin_panel():
     users = User.query.all()
     listings = Listing.query.all()
     return render_template('admin/panel.html', users=users, listings=listings)
-
-@admin.route('/test')
-def admin_test():
-    return "Admin blueprint is accessible"
 
 @admin.route('/user/<int:user_id>', methods=['GET', 'POST'])
 @admin_required
