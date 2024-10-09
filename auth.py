@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse
 from app import db, login_manager
@@ -19,15 +19,24 @@ def load_user(user_id):
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    current_app.logger.debug("Login route accessed")
     if current_user.is_authenticated:
+        current_app.logger.debug("User already authenticated, redirecting to index")
         return redirect(url_for('main.index'))
     form = LoginForm()
     if form.validate_on_submit():
+        current_app.logger.debug(f"Login form submitted for email: {form.email.data}")
         user = User.query.filter_by(email=form.email.data).first()
-        if user is None or not user.check_password(form.password.data):
+        if user is None:
+            current_app.logger.warning(f"Login attempt failed: User not found for email {form.email.data}")
+            flash('Invalid email or password')
+            return redirect(url_for('auth.login'))
+        if not user.check_password(form.password.data):
+            current_app.logger.warning(f"Login attempt failed: Incorrect password for user {user.id}")
             flash('Invalid email or password')
             return redirect(url_for('auth.login'))
         login_user(user, remember=form.remember_me.data)
+        current_app.logger.info(f"User {user.id} logged in successfully")
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
             next_page = url_for('main.index')
