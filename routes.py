@@ -23,7 +23,6 @@ def index():
 def create_listing():
     current_app.logger.debug("Entering create_listing function")
     form = ListingForm()
-    custom_field_form = CustomFieldForm()
 
     if form.validate_on_submit():
         current_app.logger.debug("Form validated successfully")
@@ -49,7 +48,7 @@ def create_listing():
                     db.session.add(photo_db)
                     current_app.logger.debug(f"Added photo: {filename}")
 
-            for field in custom_field_form.custom_fields.data:
+            for field in form.custom_fields.data:
                 if field['name'] and field['value']:
                     custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
                     db.session.add(custom_field)
@@ -82,7 +81,7 @@ def create_listing():
                 current_app.logger.error(f"Error in {field}: {error}")
                 flash(f"Error in {field}: {error}", 'error')
 
-    return render_template('create_listing.html', form=form, custom_field_form=custom_field_form)
+    return render_template('create_listing.html', form=form)
 
 @main.route('/listing/<int:listing_id>')
 def view_listing(listing_id):
@@ -99,7 +98,6 @@ def edit_listing(listing_id):
         return redirect(url_for('main.view_listing', listing_id=listing_id))
 
     form = ListingForm(obj=listing)
-    custom_field_form = CustomFieldForm()
 
     if form.validate_on_submit():
         listing.title = form.title.data
@@ -116,7 +114,7 @@ def edit_listing(listing_id):
                 db.session.add(photo_db)
 
         listing.custom_fields = []
-        for field in custom_field_form.custom_fields.data:
+        for field in form.custom_fields.data:
             if field['name'] and field['value']:
                 custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
                 db.session.add(custom_field)
@@ -136,7 +134,7 @@ def edit_listing(listing_id):
         flash('Your listing has been updated!')
         return redirect(url_for('main.view_listing', listing_id=listing.id))
 
-    return render_template('edit_listing.html', form=form, custom_field_form=custom_field_form, listing=listing)
+    return render_template('edit_listing.html', form=form, listing=listing)
 
 @main.route('/listing/<int:listing_id>/mark_sold')
 @login_required
