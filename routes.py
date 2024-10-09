@@ -21,47 +21,65 @@ def index():
 @main.route('/create_listing', methods=['GET', 'POST'])
 @login_required
 def create_listing():
+    current_app.logger.debug("Entering create_listing function")
     form = ListingForm()
     custom_field_form = CustomFieldForm()
 
     if form.validate_on_submit():
-        listing = Listing(
-            title=form.title.data,
-            description=form.description.data,
-            price=form.price.data,
-            location=form.location.data,
-            negotiable=form.negotiable.data,
-            user_id=current_user.id
-        )
-        db.session.add(listing)
-        db.session.flush()
+        current_app.logger.debug("Form validated successfully")
+        try:
+            listing = Listing(
+                title=form.title.data,
+                description=form.description.data,
+                price=form.price.data,
+                location=form.location.data,
+                negotiable=form.negotiable.data,
+                user_id=current_user.id
+            )
+            db.session.add(listing)
+            db.session.flush()
 
-        for photo in request.files.getlist('photos'):
-            if photo and allowed_file(photo.filename):
-                filename = secure_filename(photo.filename)
-                photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-                photo_db = Photo(filename=filename, listing_id=listing.id)
-                db.session.add(photo_db)
+            current_app.logger.debug(f"Created listing: {listing}")
 
-        for field in custom_field_form.custom_fields.data:
-            if field['name'] and field['value']:
-                custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
-                db.session.add(custom_field)
+            for photo in request.files.getlist('photos'):
+                if photo and allowed_file(photo.filename):
+                    filename = secure_filename(photo.filename)
+                    photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                    photo_db = Photo(filename=filename, listing_id=listing.id)
+                    db.session.add(photo_db)
+                    current_app.logger.debug(f"Added photo: {filename}")
 
-        db.session.commit()
+            for field in custom_field_form.custom_fields.data:
+                if field['name'] and field['value']:
+                    custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
+                    db.session.add(custom_field)
+                    current_app.logger.debug(f"Added custom field: {field['name']} = {field['value']}")
 
-        if current_user.enable_cross_platform_posting:
-            external_results = post_to_external_platforms(listing)
-            for result in external_results:
-                if result['success']:
-                    flash(f"Successfully posted to {result['platform']}!")
-                else:
-                    flash(f"Failed to post to {result['platform']}: {result['error']}", 'error')
-        else:
-            flash('Cross-platform posting is disabled. Your listing was only created on this platform.')
+            db.session.commit()
+            current_app.logger.info(f"Listing created successfully: {listing.id}")
 
-        flash('Your listing has been created!')
-        return redirect(url_for('main.view_listing', listing_id=listing.id))
+            if current_user.enable_cross_platform_posting:
+                external_results = post_to_external_platforms(listing)
+                for result in external_results:
+                    if result['success']:
+                        flash(f"Successfully posted to {result['platform']}!")
+                    else:
+                        flash(f"Failed to post to {result['platform']}: {result['error']}", 'error')
+            else:
+                flash('Cross-platform posting is disabled. Your listing was only created on this platform.')
+
+            flash('Your listing has been created!')
+            return redirect(url_for('main.view_listing', listing_id=listing.id))
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error creating listing: {str(e)}")
+            flash('An error occurred while creating your listing. Please try again.', 'error')
+
+    else:
+        current_app.logger.debug("Form validation failed")
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error in {field}: {error}", 'error')
 
     return render_template('create_listing.html', form=form, custom_field_form=custom_field_form)
 
