@@ -27,6 +27,9 @@
 </div>
 
 {% if not listings %}
-<p class="text-center text-gray-600 mt-8">No listings available at the moment.</p>
+<p class='text-center text-gray-600 mt-8'>No listings available at the moment.</p>
+<div class='text-center mt-4'>
+    <a href='{{ url_for('main.create_listing') }}' class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>Create New Listing</a>
+</div>
 {% endif %}
 {% endblock %}
