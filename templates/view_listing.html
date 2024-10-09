@@ -18,7 +18,14 @@
         <h2 class="text-2xl font-bold mb-2">Photos</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             {% for photo in listing.photos %}
-            <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" alt="Listing photo" class="w-full h-48 object-cover rounded">
+            <div class="relative">
+                <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" alt="Listing photo" class="w-full h-48 object-cover rounded">
+                {% if listing.status == 'sold' %}
+                <div class="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+                    <span class="text-white text-4xl font-bold">SOLD</span>
+                </div>
+                {% endif %}
+            </div>
             {% endfor %}
         </div>
     </div>

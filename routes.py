@@ -44,9 +44,13 @@ def create_listing():
             for photo in request.files.getlist('photos'):
                 if photo and allowed_file(photo.filename):
                     filename = secure_filename(photo.filename)
-                    photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                    photo_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                    photo.save(photo_path)
                     photo_db = Photo(filename=filename, listing_id=listing.id)
                     db.session.add(photo_db)
+                    current_app.logger.info(f"Photo saved: {photo_path}")
+                else:
+                    current_app.logger.warning(f"Invalid file: {photo.filename}")
 
             for field in form.custom_fields.data:
                 if field['name'] and field['value']:
