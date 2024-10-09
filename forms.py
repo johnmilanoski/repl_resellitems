@@ -26,14 +26,6 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError('Please use a different email address.')
 
-class ListingForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired()])
-    description = TextAreaField('Description', validators=[DataRequired()])
-    price = FloatField('Price', validators=[DataRequired()])
-    location = StringField('Location', validators=[DataRequired()])
-    negotiable = BooleanField('Price Negotiable')
-    submit = SubmitField('Create Listing')
-
 class CustomFieldForm(FlaskForm):
     name = StringField('Field Name')
     value = StringField('Field Value')
@@ -62,3 +54,7 @@ class AdminListingForm(FlaskForm):
     negotiable = BooleanField('Price Negotiable')
     status = SelectField('Status', choices=[('active', 'Active'), ('sold', 'Sold'), ('deleted', 'Deleted')])
     submit = SubmitField('Update Listing')
+
+class AdminSearchForm(FlaskForm):
+    search = StringField('Search', validators=[DataRequired()])
+    submit = SubmitField('Search')

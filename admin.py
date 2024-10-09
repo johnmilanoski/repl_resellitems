@@ -3,7 +3,9 @@ from flask_login import login_required, current_user
 from functools import wraps
 from app import db
 from models import User, Listing
-from forms import AdminUserForm, AdminListingForm
+from forms import AdminUserForm, AdminListingForm, AdminSearchForm
+from sqlalchemy import or_
+import time
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -18,13 +20,28 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@admin.route('/')
+@admin.route('/', methods=['GET', 'POST'])
 @admin_required
 def admin_panel():
+    start_time = time.time()
     current_app.logger.info(f"Admin panel accessed by user {current_user.id}")
-    users = User.query.all()
-    listings = Listing.query.all()
-    return render_template('admin/panel.html', users=users, listings=listings)
+    
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    search_form = AdminSearchForm()
+
+    if search_form.validate_on_submit():
+        search_query = search_form.search.data
+        users = User.query.filter(or_(User.username.ilike(f'%{search_query}%'), User.email.ilike(f'%{search_query}%'))).paginate(page=page, per_page=per_page)
+        listings = Listing.query.filter(or_(Listing.title.ilike(f'%{search_query}%'), Listing.description.ilike(f'%{search_query}%'))).paginate(page=page, per_page=per_page)
+    else:
+        users = User.query.paginate(page=page, per_page=per_page)
+        listings = Listing.query.paginate(page=page, per_page=per_page)
+    
+    end_time = time.time()
+    current_app.logger.info(f"Total admin panel load time: {end_time - start_time:.4f} seconds")
+    
+    return render_template('admin/panel.html', users=users, listings=listings, search_form=search_form)
 
 @admin.route('/user/<int:user_id>', methods=['GET', 'POST'])
 @admin_required
@@ -82,3 +99,13 @@ def admin_delete_listing(listing_id):
     current_app.logger.info(f"Listing {listing_id} deleted by admin {current_user.id}")
     flash('Listing deleted successfully.', 'success')
     return redirect(url_for('admin.admin_panel'))
+
+@admin.route('/stats')
+@admin_required
+def admin_stats():
+    total_users = User.query.count()
+    total_listings = Listing.query.count()
+    active_listings = Listing.query.filter_by(status='active').count()
+    sold_listings = Listing.query.filter_by(status='sold').count()
+
+    return render_template('admin/stats.html', total_users=total_users, total_listings=total_listings, active_listings=active_listings, sold_listings=sold_listings)

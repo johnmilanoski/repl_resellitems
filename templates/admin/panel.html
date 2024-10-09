@@ -7,6 +7,17 @@
     <h1 class="text-3xl font-bold mb-6">Admin Panel</h1>
 
     <div class="mb-8">
+        <form method="POST" class="mb-4">
+            {{ search_form.hidden_tag() }}
+            <div class="flex">
+                {{ search_form.search(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2">Search</button>
+            </div>
+        </form>
+        <a href="{{ url_for('admin.admin_stats') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">View Stats</a>
+    </div>
+
+    <div class="mb-8">
         <h2 class="text-2xl font-bold mb-4">Users</h2>
         <table class="w-full bg-white shadow-md rounded mb-4">
             <thead>
@@ -18,7 +29,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for user in users %}
+                {% for user in users.items %}
                 <tr>
                     <td class="py-2 px-4 border-b border-gray-200">{{ user.username }}</td>
                     <td class="py-2 px-4 border-b border-gray-200">{{ user.email }}</td>
@@ -33,6 +44,21 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% if users.pages > 1 %}
+        <div class="flex justify-center">
+            {% for page_num in users.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                    {% if users.page == page_num %}
+                        <a href="{{ url_for('admin.admin_panel', page=page_num) }}" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full mx-1">{{ page_num }}</a>
+                    {% else %}
+                        <a href="{{ url_for('admin.admin_panel', page=page_num) }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full mx-1">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                    <span class="mx-1">...</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 
     <div>
@@ -47,7 +73,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for listing in listings %}
+                {% for listing in listings.items %}
                 <tr>
                     <td class="py-2 px-4 border-b border-gray-200">{{ listing.title }}</td>
                     <td class="py-2 px-4 border-b border-gray-200">${{ "%.2f"|format(listing.price) }}</td>
@@ -62,6 +88,29 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% if listings.pages > 1 %}
+        <div class="flex justify-center">
+            {% for page_num in listings.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                    {% if listings.page == page_num %}
+                        <a href="{{ url_for('admin.admin_panel', page=page_num) }}" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full mx-1">{{ page_num }}</a>
+                    {% else %}
+                        <a href="{{ url_for('admin.admin_panel', page=page_num) }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full mx-1">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                    <span class="mx-1">...</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Admin panel loaded successfully');
+    });
+</script>
 {% endblock %}
