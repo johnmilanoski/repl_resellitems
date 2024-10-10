@@ -52,10 +52,13 @@ def create_listing():
                 else:
                     current_app.logger.warning(f"Invalid file: {photo.filename}")
 
-            for field in form.custom_fields.data:
-                if field['name'] and field['value']:
-                    custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
-                    db.session.add(custom_field)
+            for field_name, field_value in request.form.items():
+                if field_name.startswith('custom_fields-') and field_name.endswith('-name'):
+                    index = field_name.split('-')[1]
+                    value_key = f'custom_fields-{index}-value'
+                    if value_key in request.form:
+                        custom_field = CustomField(name=field_value, value=request.form[value_key], listing_id=listing.id)
+                        db.session.add(custom_field)
 
             db.session.commit()
 
@@ -114,10 +117,13 @@ def edit_listing(listing_id):
                     current_app.logger.warning(f"Invalid file: {photo.filename}")
 
             listing.custom_fields = []
-            for field in form.custom_fields.data:
-                if field['name'] and field['value']:
-                    custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
-                    db.session.add(custom_field)
+            for field_name, field_value in request.form.items():
+                if field_name.startswith('custom_fields-') and field_name.endswith('-name'):
+                    index = field_name.split('-')[1]
+                    value_key = f'custom_fields-{index}-value'
+                    if value_key in request.form:
+                        custom_field = CustomField(name=field_value, value=request.form[value_key], listing_id=listing.id)
+                        db.session.add(custom_field)
 
             db.session.commit()
 
