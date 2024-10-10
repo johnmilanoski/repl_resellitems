@@ -52,12 +52,10 @@ def create_listing():
                 else:
                     current_app.logger.warning(f"Invalid file: {photo.filename}")
 
-            custom_fields = []
             for field in form.custom_fields.data:
                 if field['name'] and field['value']:
                     custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
                     db.session.add(custom_field)
-                    custom_fields.append({'name': field['name'], 'value': field['value']})
 
             db.session.commit()
 
@@ -78,7 +76,7 @@ def create_listing():
             current_app.logger.error(f"Error creating listing: {str(e)}")
             flash('An error occurred while creating your listing. Please try again.', 'error')
 
-    return render_template('create_listing.html', form=form, custom_fields=form.custom_fields.data)
+    return render_template('create_listing.html', form=form)
 
 @main.route('/listing/<int:listing_id>')
 def view_listing(listing_id):
