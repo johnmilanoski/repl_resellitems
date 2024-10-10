@@ -38,9 +38,9 @@
                 {% for field in form.custom_fields %}
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="custom_fields-{{ loop.index0 }}-name">Field Name</label>
-                        <input type="text" name="custom_fields-{{ loop.index0 }}-name" id="custom_fields-{{ loop.index0 }}-name" value="{{ field.name }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="text" name="custom_fields-{{ loop.index0 }}-name" id="custom_fields-{{ loop.index0 }}-name" value="{{ field['name'] }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                         <label class="block text-gray-700 text-sm font-bold mb-2 mt-2" for="custom_fields-{{ loop.index0 }}-value">Field Value</label>
-                        <input type="text" name="custom_fields-{{ loop.index0 }}-value" id="custom_fields-{{ loop.index0 }}-value" value="{{ field.value }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="text" name="custom_fields-{{ loop.index0 }}-value" id="custom_fields-{{ loop.index0 }}-value" value="{{ field['value'] }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                     </div>
                 {% endfor %}
             {% endif %}
