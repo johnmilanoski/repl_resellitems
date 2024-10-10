@@ -94,6 +94,10 @@ def edit_listing(listing_id):
 
     form = ListingForm(obj=listing)
 
+    if request.method == 'GET':
+        # Populate custom fields
+        form.custom_fields.data = [{'name': field.name, 'value': field.value} for field in listing.custom_fields]
+
     if form.validate_on_submit():
         try:
             listing.title = form.title.data
