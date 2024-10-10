@@ -28,6 +28,9 @@ def my_listings():
 @login_required
 def create_listing():
     form = ListingForm()
+    current_app.logger.debug(f"Form data: {form.data}")
+    current_app.logger.debug(f"Custom fields: {form.custom_fields.data}")
+    
     if form.validate_on_submit():
         try:
             listing = Listing(
@@ -75,7 +78,8 @@ def create_listing():
             db.session.rollback()
             current_app.logger.error(f"Error creating listing: {str(e)}")
             flash('An error occurred while creating your listing. Please try again.', 'error')
-            return render_template('create_listing.html', form=form)
+    else:
+        current_app.logger.debug(f"Form errors: {form.errors}")
 
     return render_template('create_listing.html', form=form)
 

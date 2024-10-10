@@ -34,14 +34,16 @@
             <div id="photo-preview-container" class="mt-2 flex flex-wrap"></div>
         </div>
         <div id="custom-fields-container">
-            {% for field in form.custom_fields %}
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ field.name.id }}">Field Name</label>
-                {{ field.name(class_="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
-                <label class="block text-gray-700 text-sm font-bold mb-2 mt-2" for="{{ field.value.id }}">Field Value</label>
-                {{ field.value(class_="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
-            </div>
-            {% endfor %}
+            {% if form.custom_fields %}
+                {% for field in form.custom_fields %}
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ field.name.id }}">Field Name</label>
+                        {{ field.name(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
+                        <label class="block text-gray-700 text-sm font-bold mb-2 mt-2" for="{{ field.value.id }}">Field Value</label>
+                        {{ field.value(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
+                    </div>
+                {% endfor %}
+            {% endif %}
         </div>
         <button type="button" id="add-custom-field" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4">
             Add Custom Field
