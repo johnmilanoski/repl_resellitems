@@ -115,7 +115,10 @@ def edit_listing(listing_id):
                 else:
                     current_app.logger.warning(f"Invalid file: {photo.filename}")
 
-            listing.custom_fields = []
+            # Clear existing custom fields
+            CustomField.query.filter_by(listing_id=listing.id).delete()
+
+            # Add updated custom fields
             for field in form.custom_fields.data:
                 if field['name'] and field['value']:
                     custom_field = CustomField(name=field['name'], value=field['value'], listing_id=listing.id)
